@@ -2,6 +2,7 @@ from pathlib import Path
 
 import meshio
 import numpy as np
+import pytest
 
 from ems_mesh_morpher.config import load_config
 from ems_mesh_morpher.gmsh4 import read_gmsh4_node_coordinates
@@ -15,6 +16,8 @@ EXAMPLES = ROOT / "examples" / "GL80"
 
 
 def _run_gl80_case(input_name: str, config_name: str, tmp_path: Path):
+    if not (GL80 / input_name).exists():
+        pytest.skip("Optional GL80 motor meshes are not distributed")
     mesh = read_mesh_auto(GL80 / input_name)
     config = load_config(EXAMPLES / config_name)
 
