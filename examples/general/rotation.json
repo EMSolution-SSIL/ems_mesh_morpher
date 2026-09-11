@@ -1,0 +1,21 @@
+{
+  "mode": "mesh_motion",
+  "regions": {
+    "moving": {
+      "property_ids": [10]
+    }
+  },
+  "motion": {
+    "type": "rotation",
+    "center": [0.0, 0.0, 0.0],
+    "axis": [0.0, 0.0, 1.0],
+    "angle_degrees": 5.0
+  },
+  "morphing": {
+    "type": "none"
+  },
+  "quality": {
+    "enabled": true,
+    "fail_on_inverted": true
+  }
+}

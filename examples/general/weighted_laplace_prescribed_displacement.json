@@ -1,0 +1,33 @@
+{
+  "mode": "mesh_motion",
+  "regions": {
+    "deformable": {
+      "property_ids": [20]
+    },
+    "fixed": {
+      "property_ids": [30]
+    }
+  },
+  "motion": {
+    "type": "prescribed",
+    "point_displacements": [
+      {
+        "point_index": 0,
+        "displacement": [0.001, 0.0, 0.0]
+      }
+    ]
+  },
+  "morphing": {
+    "type": "weighted_laplace",
+    "weighting": "inverse_distance",
+    "distance_power": 1.0,
+    "minimum_distance": 1.0e-12
+  },
+  "quality": {
+    "enabled": true,
+    "fail_on_inverted": true
+  },
+  "output": {
+    "file_format": "gmsh4"
+  }
+}

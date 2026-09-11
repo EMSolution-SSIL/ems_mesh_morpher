@@ -1,0 +1,36 @@
+{
+  "mode": "mesh_motion",
+  "regions": {
+    "deformable": {
+      "property_ids": [20]
+    },
+    "fixed": {
+      "property_ids": [30]
+    }
+  },
+  "motion": {
+    "type": "prescribed",
+    "point_displacements": [
+      {
+        "point_index": 0,
+        "displacement": [0.001, 0.0, 0.0]
+      }
+    ]
+  },
+  "morphing": {
+    "type": "idw",
+    "power": 2.0,
+    "neighbors": 32,
+    "radius": null,
+    "smoothing": 0.0,
+    "outside_policy": "nearest",
+    "query_chunk_size": 8192
+  },
+  "quality": {
+    "enabled": true,
+    "fail_on_inverted": true
+  },
+  "output": {
+    "file_format": "gmsh4"
+  }
+}

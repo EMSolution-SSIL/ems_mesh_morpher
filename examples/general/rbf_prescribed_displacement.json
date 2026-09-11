@@ -1,0 +1,38 @@
+{
+  "mode": "mesh_motion",
+  "regions": {
+    "deformable": {
+      "property_ids": [20]
+    },
+    "fixed": {
+      "property_ids": [30]
+    }
+  },
+  "motion": {
+    "type": "prescribed",
+    "point_displacements": [
+      {
+        "point_index": 0,
+        "displacement": [0.001, 0.0, 0.0]
+      }
+    ]
+  },
+  "morphing": {
+    "type": "rbf",
+    "kernel": "wendland_c2",
+    "neighbors": 32,
+    "radius": null,
+    "radius_scale": 1.25,
+    "regularization": 1.0e-12,
+    "polynomial_degree": 1,
+    "outside_policy": "nearest",
+    "query_chunk_size": 4096
+  },
+  "quality": {
+    "enabled": true,
+    "fail_on_inverted": true
+  },
+  "output": {
+    "file_format": "gmsh4"
+  }
+}

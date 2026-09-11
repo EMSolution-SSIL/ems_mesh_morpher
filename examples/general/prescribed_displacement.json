@@ -1,0 +1,24 @@
+{
+  "mode": "mesh_motion",
+  "regions": {
+    "deformable": {
+      "property_ids": [20]
+    },
+    "fixed": {
+      "property_ids": [30]
+    }
+  },
+  "motion": {
+    "type": "prescribed",
+    "point_displacements": [
+      {
+        "point_index": 0,
+        "displacement": [0.001, 0.0, 0.0]
+      }
+    ]
+  },
+  "morphing": {
+    "type": "distance_blend",
+    "blend": "smoothstep"
+  }
+}

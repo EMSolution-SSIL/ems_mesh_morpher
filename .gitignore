@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+build/
+dist/
+release_dist/
+release_smoke/
+*.egg-info/
+
+# Reproducible generated examples and solver work files.
+generated/
+data/skin_layer_sample/BlockConductorModel/*
+!data/skin_layer_sample/BlockConductorModel/post_geom_hexa.neu
+!data/skin_layer_sample/BlockConductorModel/post_geom_tetra.neu
+!data/skin_layer_sample/BlockConductorModel/post_geom_prism.neu
+data/GL80/
+data/Deform_sample/

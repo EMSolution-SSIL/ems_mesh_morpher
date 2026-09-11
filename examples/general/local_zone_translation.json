@@ -1,0 +1,37 @@
+{
+  "mode": "mesh_motion",
+  "regions": {
+    "moving": {
+      "property_ids": [10]
+    },
+    "deformable": {
+      "property_ids": [20]
+    },
+    "fixed": {
+      "property_ids": [30]
+    },
+    "protected": {
+      "property_ids": [40]
+    },
+    "morphing_zone": {
+      "geometry": {
+        "type": "box",
+        "minimum": [-0.01, -0.01, -0.01],
+        "maximum": [0.01, 0.01, 0.01]
+      }
+    }
+  },
+  "motion": {
+    "type": "translation",
+    "displacement": [0.001, 0.0, 0.0]
+  },
+  "morphing": {
+    "type": "distance_blend",
+    "blend": "smoothstep",
+    "distance_chunk_size": 2048
+  },
+  "quality": {
+    "enabled": true,
+    "fail_on_inverted": true
+  }
+}

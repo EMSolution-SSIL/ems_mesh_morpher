@@ -1,0 +1,33 @@
+{
+  "mode": "motor_eccentricity_2d",
+  "geometry": {
+    "center": [0.0, 0.0],
+    "moving_radius": 0.0403,
+    "fixed_radius": 0.04065
+  },
+  "regions": {
+    "moving_property_ids": [
+      10,
+      30,
+      {"start": 30000, "stop": 30035},
+      {"start": 35000, "stop": 35035}
+    ],
+    "deformable_property_ids": [41],
+    "fixed_property_ids": []
+  },
+  "motion": {
+    "type": "translation",
+    "displacement": [0.00005, 0.0]
+  },
+  "morphing": {
+    "type": "radial_blend",
+    "blend": "smoothstep"
+  },
+  "quality": {
+    "enabled": true,
+    "fail_on_inverted": true
+  },
+  "output": {
+    "file_format": "gmsh4"
+  }
+}
