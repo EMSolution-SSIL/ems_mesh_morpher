@@ -556,3 +556,7 @@ format. The curved coil's actual face-normal thickness is 0.0019754 to 0.002;
 the small variation comes from smooth normal averaging along the arc. The
 all-prism reference mesh is read correctly but is intentionally rejected by the
 current tetrahedron/hexahedron-only generator.
+
+## 日本語版
+
+日本語版は [`README_ja.md`](README_ja.md) を参照してください。
