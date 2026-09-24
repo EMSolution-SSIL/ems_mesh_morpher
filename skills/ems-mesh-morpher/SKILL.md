@@ -28,8 +28,8 @@ Do not infer units or Property IDs from names alone.
 
 1. Use the `ems-mesh-morph` CLI for configured rigid motion and coordinate-only
    morphing of an existing mesh.
-2. Use `generate_skin_layer` for tetrahedral or hexahedral conductor skin
-   layers, sharp rectangular corners, and excluded symmetry planes.
+2. Use `generate_skin_layer_2d` for planar triangle/quad regions and
+   `generate_skin_layer` for tetrahedral or hexahedral conductor volumes.
 3. Use `PyEMSolMorphingAdapter` when pyemsol supplies DEFORM regions, topology,
    and per-step rigid-node targets.
 4. Use the lower-level IDW, RBF, or Weighted Laplace APIs when another solver
@@ -72,11 +72,26 @@ For EMSolution/pyemsol, set `output.file_format` to `gmsh4`. Inspect the printed
 
 ## Skin-layer generation
 
-The current generator accepts linear tetrahedral and hexahedral conductor
+For 2-D motor sections, `generate_skin_layer_2d` creates quadrilateral layers
+on every exterior edge of selected triangle/quad Properties. Pass a 2D-only
+mesh: the API rejects inputs containing 3-D volume cells because the volume
+neighbors would not receive matching subdivisions. Check core orientation,
+area ratio, and core/layer scaled Jacobians in `result.report`. Exclude 2-D
+symmetry/model cuts with `SkinLayer2DConfig.excluded_planes` and
+`PlaneSelector`; the default `slip_plane` constraint keeps layer endpoints and
+the shortened core boundary on the selected plane.
+
+The 3-D generator accepts linear tetrahedral and hexahedral conductor
 meshes. It creates wedge cells from triangular boundary faces and hexahedral
 cells from quadrilateral faces. Set total `thickness`, `layer_count`, and
 `growth_ratio`; a ratio of `1.0` creates equal layers and a ratio greater than
 `1.0` makes outer layers finer.
+
+For conforming 3-D output, layer every conductor face adjoining another
+retained volume region. Use `BoundaryRoleConfig` exclusions only for true outer
+or symmetry boundaries; excluding an internal conductor/air interface creates
+a nonconforming mesh. The default collision policy also rejects opposing layers
+before each reaches half the local section thickness.
 
 Use the reviewed samples to verify an installation:
 

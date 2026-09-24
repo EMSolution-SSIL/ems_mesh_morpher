@@ -35,19 +35,30 @@ coverage under `tests`.
 
 ## Skin-layer invariants
 
-- The generator currently accepts linear tetrahedral or hexahedral conductor
-  input. Triangle boundary faces create wedge layers and quadrilateral faces
-  create hexahedral layers; all-prism input is reference data, not supported
-  generator input.
+- The 2-D generator accepts 2D-only planar linear triangle/quad meshes and
+  creates quad layers on their exterior edges. Reject any input containing 3-D
+  volume cells because their interfaces would not receive matching layers.
+- For 2-D symmetry/model cuts, use `SkinLayer2DConfig.excluded_planes` with
+  `PlaneSelector`. Keep the default `slip_plane` constraint unless the boundary
+  is intentionally fixed; active layers must terminate conformingly on the cut.
+- The 3-D generator accepts linear tetrahedral or hexahedral conductor input.
+  Triangle boundary faces create wedge layers and quadrilateral faces create
+  hexahedral layers; all-prism input is reference data, not supported generator
+  input.
 - Skin-layer generation intentionally adds points, cells, and Property data.
   Preserve the remaining source topology and metadata.
 - Preserve excluded symmetry/boundary planes. Do not create skin volume on an
-  excluded face, and keep its constrained points on the specified plane.
+  excluded face, and keep its constrained points on the specified plane. In a
+  3-D mixed-region model, exclude only a true outer or symmetry boundary; every
+  interface adjoining a retained volume region must be layered to stay conforming.
 - Keep collision policy `fail` by default. `reduce` may lower local thickness;
   `allow` may record a risk but must still pass the normal 3-D quality gate.
 - Concave-corner repair, full offset-surface intersection repair, local
   remeshing, explicit per-layer thickness lists, and skin-depth-derived
   thickness are not implemented in the current release.
+- The current 2-D generator supports plane-selected excluded edges. Explicit
+  edge IDs, boundary Property selectors, and local 2-D remeshing are not yet
+  implemented.
 
 ## Data policy
 

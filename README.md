@@ -5,7 +5,8 @@ for EMSolution workflows. It supports translation, rotation, scaling,
 prescribed displacement, property/geometrical selection, radial, distance, IDW,
 compact-support RBF, or weighted Laplace propagation, basic 2D quality reporting, and
 metadata-preserving output through `ems_file_format_converter`, including Gmsh
-4.x. The Phase 1 motor eccentricity interface remains available as a
+4.x. It also creates layered skin meshes for planar triangle/quad regions and
+tetrahedral/hexahedral volumes. The Phase 1 motor eccentricity interface remains available as a
 backward-compatible convenience wrapper.
 
 This project is source-available under the
@@ -385,6 +386,62 @@ python .\examples\pyemsol_deform_sample\run_external_morphing.py `
 The interface updates coordinates only. Mesh replacement and local remeshing are not
 part of this version.
 
+## 2D skin-layer generator
+
+`generate_skin_layer_2d` creates one or more quadrilateral skin layers along
+the exterior edges of a planar triangle or quadrilateral region. Its input must
+be a 2D-only mesh; an input containing any 3D volume cell is rejected because
+the adjacent volume cells would not receive matching layer subdivisions. The
+selected core is moved with Weighted Laplace by default.
+
+The example below shows three skin layers on a toothed stator. The radial model
+cuts on `x=0` and `y=0` are excluded, so no skin elements are created on the
+symmetry boundaries.
+
+![Three-layer 2D stator skin mesh with excluded symmetry boundaries](https://raw.githubusercontent.com/EMSolution-SSIL/ems_mesh_morpher/main/docs/images/stator_skin_layer_2d.png)
+
+```python
+from ems_file_format_converter import read_mesh
+from ems_mesh_morpher.skin_layer import (
+    PlaneConstraint,
+    PlaneSelector,
+    SkinLayer2DConfig,
+    generate_skin_layer_2d,
+)
+
+mesh = read_mesh("motor_2d.neu")
+config = SkinLayer2DConfig(
+    thickness=0.0025,
+    region_property_ids=(1,),
+    layer_count=3,
+    growth_ratio=1.0,
+    core_morphing="weighted_laplace",
+    excluded_planes=(
+        PlaneSelector(
+            PlaneConstraint(normal=(1.0, 0.0, 0.0), offset=0.0)
+        ),
+        PlaneSelector(
+            PlaneConstraint(normal=(0.0, 1.0, 0.0), offset=0.0)
+        ),
+    ),
+    skin_layer_property_id=101,
+)
+result = generate_skin_layer_2d(mesh, config)
+result.write("motor_2d_with_skin.neu")
+print(result.report.to_dict())
+```
+
+The 2D quality gate checks core orientation, degeneracy, minimum area ratio,
+and core/layer scaled Jacobians before returning a result. The current 2D
+implementation targets meshes in an XY-parallel plane. An excluded plane omits
+every boundary edge whose endpoints lie on that plane. Its default
+`node_constraint="slip_plane"` keeps the shortened core boundary and layer
+endpoints on the symmetry plane. The report records total, active, and excluded
+edge counts. Exclude only a true symmetry/model cut with no retained 2D region
+across it; excluding an internal material interface would make that interface
+nonconforming. Concave-corner intersection repair, local 2D thickness
+reduction, and local 2D remeshing are not yet supported.
+
 ## Phase 10C-10E layered generator
 
 Version 0.9 creates one or more volumetric skin layers on tetrahedral or hexahedral
@@ -392,6 +449,18 @@ conductors. Triangle boundary faces produce wedge cells and quadrilateral faces
 produce hexahedral cells. Rectangular sharp corners and excluded symmetry planes
 are supported. Phase 10E adds opposing-surface collision checks and explicit
 local thickness control.
+
+The examples below show generated skin volumes around a curved coil and a thin
+plate. The skin region is translucent red and the retained core is pink; the
+plate's displayed z dimension is enlarged by a factor of 10 for visibility.
+
+![3D skin-layer examples for a curved coil and thin plate](https://raw.githubusercontent.com/EMSolution-SSIL/ems_mesh_morpher/main/docs/images/skin_layer_3d_examples.png)
+
+For a conforming 3D result, generate layers on every conductor interface that
+touches another retained volume region. Exclude only true model boundaries,
+such as an outer boundary or symmetry plane where no adjacent volume needs a
+matching subdivision. Excluding an internal conductor/air interface leaves a
+nonconforming mesh.
 
 ```python
 from ems_file_format_converter import read_mesh
@@ -446,6 +515,12 @@ of `2.0` divide the total thickness in proportions `1:2:4`.
   layers generated from both sides.
 - `"allow"` records the risk without changing the thickness; the normal 3D
   quality gate still rejects inverted or excessively degraded elements.
+
+With the default `"fail"` policy, two opposing skin surfaces cannot each use
+half the local section thickness: the default `0.4` factor rejects the request
+before morphing. If that clearance guard is explicitly disabled, the quality
+gate still rejects a core that collapses at one-half thickness or inverts above
+one-half thickness.
 
 The node-wise requested, maximum, and applied values are available in
 `result.local_thickness`. The summary report includes the minimum, maximum,
@@ -511,7 +586,7 @@ offset = compute_inward_offset(
 )
 ```
 
-Current limitations: linear tetrahedron/hexahedron input only; explicit
+Current 3D limitations: linear tetrahedron/hexahedron input only; explicit
 per-layer thickness lists and skin-depth-based thickness calculation are not yet supported;
 concave corners fail explicitly by default. Phase 10E uses local edge-length and
 inward-ray/opposing-surface checks; full offset-surface intersection repair and

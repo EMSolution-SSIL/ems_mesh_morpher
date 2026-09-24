@@ -9,6 +9,7 @@ from ems_mesh_morpher import (
     SkinLayerCollisionConfig,
     SkinLayerCollisionError,
     SkinLayerConfig,
+    SkinLayerQualityError,
     classify_boundary_faces,
     compute_inward_offset,
     compute_local_thickness_limits,
@@ -86,6 +87,48 @@ def test_narrow_gap_fails_before_generating_an_invalid_layer() -> None:
 
     with pytest.raises(SkinLayerCollisionError, match="opposing_surface"):
         generate_skin_layer(mesh, _config("fail"))
+
+
+@pytest.mark.parametrize("thickness", [0.0025, 0.0026])
+def test_two_sided_half_thickness_or_more_is_rejected_before_morphing(
+    thickness: float,
+) -> None:
+    mesh = _box_mesh((0.1, 0.1, 0.005))
+    config = SkinLayerConfig(
+        thickness=thickness,
+        volume_property_ids=(100,),
+        layer_count=3,
+        core_morphing=CoreMorphingConfig(method="none"),
+        collision=SkinLayerCollisionConfig(policy="fail"),
+        skin_layer_property_id=200,
+        inner_surface_property_id=201,
+    )
+
+    with pytest.raises(SkinLayerCollisionError, match="exceeds local limits"):
+        generate_skin_layer(mesh, config)
+
+
+@pytest.mark.parametrize("thickness", [0.0025, 0.0026])
+def test_quality_gate_rejects_two_sided_collapse_when_limits_are_disabled(
+    thickness: float,
+) -> None:
+    mesh = _box_mesh((0.1, 0.1, 0.005))
+    config = SkinLayerConfig(
+        thickness=thickness,
+        volume_property_ids=(100,),
+        layer_count=3,
+        core_morphing=CoreMorphingConfig(method="none"),
+        collision=SkinLayerCollisionConfig(
+            policy="fail",
+            maximum_thickness_to_edge_ratio=None,
+            opposing_surface_safety_factor=None,
+        ),
+        skin_layer_property_id=200,
+        inner_surface_property_id=201,
+    )
+
+    with pytest.raises(SkinLayerQualityError, match="all core morphing methods failed"):
+        generate_skin_layer(mesh, config)
 
 
 def test_narrow_gap_can_apply_explicit_local_thickness_reduction() -> None:

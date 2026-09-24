@@ -315,7 +315,58 @@ python .\examples\pyemsol_deform_sample\run_external_morphing.py `
 
 このインターフェースが更新するのは座標のみです。mesh replacement と local remeshing はこの version の対象外です。
 
+## 2D 表皮メッシュ生成
+
+`generate_skin_layer_2d` は、平面上の三角形または四角形の領域外周に、1 層以上の四角形
+表皮メッシュを生成します。入力は **2D 要素だけから成るメッシュ** に限定されます。3D
+体積要素を含む入力は、隣接する体積要素側に層分割が伝播せず非整合となるため、明示的に
+拒否します。選択領域のコア側は既定で Weighted Laplace により移動します。
+
+下図は、ティースを持つステータコアに 3 層の表皮メッシュを作成した例です。`x=0` と
+`y=0` のモデル切断面を除外することで、対称境界面には表皮要素を生成していません。
+
+![対称境界面を除外した 3 層の 2D ステータ表皮メッシュ](https://raw.githubusercontent.com/EMSolution-SSIL/ems_mesh_morpher/main/docs/images/stator_skin_layer_2d.png)
+
+```python
+from ems_file_format_converter import read_mesh
+from ems_mesh_morpher.skin_layer import (
+    PlaneConstraint,
+    PlaneSelector,
+    SkinLayer2DConfig,
+    generate_skin_layer_2d,
+)
+
+mesh = read_mesh("motor_2d.neu")
+config = SkinLayer2DConfig(
+    thickness=0.0025,
+    region_property_ids=(1,),
+    layer_count=3,
+    growth_ratio=1.0,
+    core_morphing="weighted_laplace",
+    excluded_planes=(
+        PlaneSelector(PlaneConstraint(normal=(1.0, 0.0, 0.0), offset=0.0)),
+        PlaneSelector(PlaneConstraint(normal=(0.0, 1.0, 0.0), offset=0.0)),
+    ),
+    skin_layer_property_id=101,
+)
+result = generate_skin_layer_2d(mesh, config)
+```
+
+`excluded_planes` に指定した平面上に両端節点を持つ境界辺は、表皮メッシュの対象外です。
+既定の `node_constraint="slip_plane"` により、切断面上の節点はその面に拘束されつつ、面内の
+移動を許容します。除外指定は実際の対称面・モデル切断面だけに使用し、異なる材料が接する
+内部界面には使用しないでください。
+
+現在は、凹角部での交差を自動的に修復する処理、および局所的な厚さ縮小や 2D 再メッシュは
+未対応です。これらが必要になるほど厚い層を指定する場合は、生成後の品質レポートを確認し、
+厚さまたは層数を調整してください。
+
 ## Phase 10C-10E 多層生成機能
+
+以下はコイルおよび薄板の 3D 表皮メッシュ例です。赤の半透明領域が表皮層、淡赤色が
+変形後のコアです。薄板の Z 方向は見やすさのため 10 倍に拡大しています。
+
+![コイルと薄板の 3D 表皮メッシュ](https://raw.githubusercontent.com/EMSolution-SSIL/ems_mesh_morpher/main/docs/images/skin_layer_3d_examples.png)
 
 Version 0.9 では、四面体または六面体導体の表面に1層以上の体積 skin layer を生成できます。三角形境界面からは wedge 要素、四角形境界面からは hexahedral 要素を生成します。矩形の鋭角 corner および除外対象の symmetry plane に対応しています。Phase 10E では、対向面との collision check および明示的な local thickness control が追加されています。
 

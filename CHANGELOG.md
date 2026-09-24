@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.13.0 - 2026-09-24
+
+- Add planar triangle/quad skin-layer generation with multiple layers and
+  Weighted Laplace core morphing.
+- Reject mixed 2D/3D inputs that would create nonconforming interfaces.
+- Add line/plane-selected symmetry-boundary exclusions for the 2D generator.
+- Constrain active/excluded junctions and excluded-boundary nodes to their
+  symmetry planes.
+- Add thin-plate and toothed stator validation cases and quality regressions.
+
 ## 0.12.0 - 2026-09-09
 
 - Add reference-based repeated translation and rotation schedules.
